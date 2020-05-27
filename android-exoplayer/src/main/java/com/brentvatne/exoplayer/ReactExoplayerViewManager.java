@@ -29,6 +29,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     private static final String PROP_SRC_HEADERS = "requestHeaders";
     private static final String PROP_RESIZE_MODE = "resizeMode";
     private static final String PROP_REPEAT = "repeat";
+    private static final String PROP_ON_TOP = "onTop";
     private static final String PROP_SELECTED_AUDIO_TRACK = "selectedAudioTrack";
     private static final String PROP_SELECTED_AUDIO_TRACK_TYPE = "type";
     private static final String PROP_SELECTED_AUDIO_TRACK_VALUE = "value";
@@ -148,6 +149,11 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     @ReactProp(name = PROP_REPEAT, defaultBoolean = false)
     public void setRepeat(final ReactExoplayerView videoView, final boolean repeat) {
         videoView.setRepeatModifier(repeat);
+    }
+
+    @ReactProp(name = PROP_ON_TOP, defaultBoolean = false)
+    public void setOnTop(final ReactExoplayerView videoView, final boolean onTop) {
+      videoView.setOnTop(onTop);
     }
 
     @ReactProp(name = PROP_SELECTED_VIDEO_TRACK)

@@ -151,6 +151,14 @@ public final class ExoPlayerView extends FrameLayout {
 
     }
 
+    public void setOnTop(boolean onTop) {
+      if (surfaceView instanceof SurfaceView) {
+        surfaceView.setVisibility(View.GONE);
+        ((SurfaceView) surfaceView).setZOrderMediaOverlay(onTop);
+        surfaceView.setVisibility(View.VISIBLE);
+      }
+    }
+
     /**
      * Get the view onto which video is rendered. This is either a {@link SurfaceView} (default)
      * or a {@link TextureView} if the {@code use_texture_view} view attribute has been set to true.

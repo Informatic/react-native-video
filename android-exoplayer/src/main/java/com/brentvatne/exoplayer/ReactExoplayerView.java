@@ -131,6 +131,7 @@ class ReactExoplayerView extends FrameLayout implements
     private Uri srcUri;
     private String extension;
     private boolean repeat;
+    private boolean onTop;
     private String audioTrackType;
     private Dynamic audioTrackValue;
     private String videoTrackType;
@@ -1035,6 +1036,7 @@ class ReactExoplayerView extends FrameLayout implements
     private void applyModifiers() {
         setRepeatModifier(repeat);
         setMutedModifier(muted);
+        setOnTop(onTop);
     }
 
     public void setRepeatModifier(boolean repeat) {
@@ -1046,6 +1048,13 @@ class ReactExoplayerView extends FrameLayout implements
             }
         }
         this.repeat = repeat;
+    }
+
+    public void setOnTop(boolean onTop) {
+      if (player != null) {
+        exoPlayerView.setOnTop(onTop);
+      }
+      this.onTop = onTop;
     }
 
     public void setSelectedTrack(int trackType, String type, Dynamic value) {

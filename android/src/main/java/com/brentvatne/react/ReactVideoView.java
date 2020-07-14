@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Matrix;
+import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.media.TimedMetaData;
 import android.net.Uri;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.WindowManager;
 import android.view.View;
 import android.view.Window;
@@ -52,6 +54,9 @@ public class ReactVideoView extends ScalableVideoView implements
     MediaPlayer.OnInfoListener,
     LifecycleEventListener,
     MediaController.MediaPlayerControl {
+
+    private static final String TAG = ReactVideoViewManager.REACT_CLASS;
+    private boolean preloading = false;
 
     public enum Events {
         EVENT_LOAD_START("onVideoLoadStart"),
@@ -389,17 +394,18 @@ public class ReactVideoView extends ScalableVideoView implements
 
     public void setPausedModifier(final boolean paused) {
         mPaused = paused;
+        Log.d(TAG, "setPausedModifier(): " + paused);
 
         if (!mMediaPlayerValid) {
             return;
         }
 
         if (mPaused) {
-            if (mMediaPlayer.isPlaying()) {
+            if (mMediaPlayer.isPlaying() && !preloading) {
                 pause();
             }
         } else {
-            if (!mMediaPlayer.isPlaying()) {
+            if (!mMediaPlayer.isPlaying() && !preloading) {
                 start();
                 // Setting the rate unpauses, so we have to wait for an unpause
                 if (mRate != mActiveRate) { 
@@ -556,6 +562,12 @@ public class ReactVideoView extends ScalableVideoView implements
         event.putBoolean(EVENT_PROP_FAST_FORWARD, true);
         event.putBoolean(EVENT_PROP_STEP_BACKWARD, true);
         event.putBoolean(EVENT_PROP_STEP_FORWARD, true);
+
+        Log.d(TAG, "onPrepared(): preloading");
+        mMediaPlayer.seekTo(0);
+        preloading = true;
+
+
         mEventEmitter.receiveEvent(getId(), Events.EVENT_LOAD.toString(), event);
 
         applyModifiers();
@@ -575,6 +587,25 @@ public class ReactVideoView extends ScalableVideoView implements
         }
 
         selectTimedMetadataTrack(mp);
+    }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
+        Surface surface = new Surface(surfaceTexture);
+        Log.d(TAG, "surfaceTextureAvailable()");
+        if (mMediaPlayer != null) {
+            mMediaPlayer.setSurface(surface);
+            Log.d(TAG, "surfaceTextureAvailable() -> setting mMediaPlayer surface");
+        }
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+        if (preloading) {
+            Log.d(TAG, "onSurfaceTextureUpdated(): pausing after preload");
+            preloading = false;
+            setPausedModifier(mPaused);
+        }
     }
 
     @Override
@@ -623,6 +654,7 @@ public class ReactVideoView extends ScalableVideoView implements
 
     @Override
     public void seekTo(int msec) {
+        Log.d(TAG, "seekTo(): " + Integer.toString(msec));
         if (mMediaPlayerValid) {
             mSeekTime = msec;
             super.seekTo(msec);
